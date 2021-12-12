@@ -3,6 +3,11 @@ uuid = "1dbc45e6-8cf9-4e8d-bdf2-daf88890fdf9"
 authors = ["Michal Sojka <michal.sojka@cvut.cz> and contributors"]
 version = "0.1.0"
 
+[deps]
+Gnuplot = "dc211083-a33a-5b79-959f-2ff34033469d"
+Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
+
 [compat]
 julia = "1"
 
