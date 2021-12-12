@@ -1,19 +1,38 @@
 using GnuplotRecipes
 using Test
-using Gnuplot, DataFrames, Measurements
+using Gnuplot, DataFrames, Measurements, PNGFiles
 
-if Gnuplot.options.gpviewer
-    macro gpok(args...) :( @gp $(esc.(args)...); true ) end
-else
-    macro gpok(args...) :( display(@gp $(esc.(args)...)); true ) end
+function compare_plot(name)
+    fn = "img/$name.png"
+    fn_expected = "img/$name.expect.png"
+    save(term="pngcairo size 640,360 fontscale 0.8", output=fn)
+    cur = PNGFiles.load(fn)
+    if isfile(fn_expected)
+        exp = PNGFiles.load(fn_expected)
+    else
+        exp = cur;
+        cp(fn, fn_expected)
+    end
+    return exp == cur
+end
+
+macro gpok(args...)
+    gp_call = :(@gp $(esc.(args)...))
+    if ! Gnuplot.options.gpviewer
+        gp_call = :(display($gp_call))
+    end
+    return quote
+        $gp_call
+        compare_plot($("gp_" * join(string.(args))))
+    end
 end
 
 @testset "GnuplotRecipes.jl" begin
     # Plain numbers
-    df = DataFrame(names=["a", "b", "c"], temp=10:12, speed=4:-1:2)
-    @test @gpok bars(df)
+    dfnum = DataFrame(names=["a", "b", "c"], temp=10:12, speed=4:-1:2)
+    @test @gpok bars(dfnum)
     # Measurement values
-    df = DataFrame(names=["very long label", "b", "c"], temp=10:12, speed=collect(4:-3:-2) .± 1)
+    df = DataFrame(names=["very long label", "b", "c"], temp=10:12, speed=collect(5:-1.5:2) .± 1)
     @test @gpok bars(df)
     @test @gpok bars(df, errorbars="lw 5 lc rgb '#ff0000'")
     @test @gpok bars(df, fill_style="pattern 1")
@@ -27,5 +46,5 @@ end
     @test_logs (:warn, r"columnstacked") @gp bars(df, hist_style = "columnstacked")
     @test_throws AssertionError @gp bars(df, y2cols=[:bad])
     # Symbols as lables
-    @test @gpok bars(DataFrame(l=[:a, :b], v=[1, 2]))
+    @test @gpok bars(DataFrame(l=[:a, :b], v=[2, 1]))
 end

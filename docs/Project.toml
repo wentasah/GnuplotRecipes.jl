@@ -1,3 +1,6 @@
 [deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Gnuplot = "dc211083-a33a-5b79-959f-2ff34033469d"
 GnuplotRecipes = "1dbc45e6-8cf9-4e8d-bdf2-daf88890fdf9"
+Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
