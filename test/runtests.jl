@@ -27,6 +27,11 @@ macro gpok(args...)
     end
 end
 
+orig_term = Gnuplot.options.term
+if !isinteractive()
+    Gnuplot.options.term = "unknown"
+end
+
 @testset "GnuplotRecipes.jl" begin
     # Plain numbers
     dfnum = DataFrame(names=["a", "b", "c"], temp=10:12, speed=4:-1:2)
@@ -48,3 +53,5 @@ end
     # Symbols as lables
     @test @gpok bars(DataFrame(l=[:a, :b], v=[2, 1]))
 end
+
+Gnuplot.options.term = orig_term
