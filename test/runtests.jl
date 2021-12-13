@@ -5,6 +5,7 @@ using Gnuplot, DataFrames, Measurements, PNGFiles
 function compare_plot(name)
     fn = "img/$name.png"
     fn_expected = "img/$name.expect.png"
+    isdir("img") || mkdir("img")
     save(term="pngcairo size 640,360 fontscale 0.8", output=fn)
     cur = PNGFiles.load(fn)
     if isfile(fn_expected)
