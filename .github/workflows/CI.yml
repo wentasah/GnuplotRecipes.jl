@@ -27,6 +27,10 @@ jobs:
           - x64
     steps:
       - uses: actions/checkout@v2
+      - name: Install gnuplot
+        run: |
+          sudo apt update &&
+          sudo apt install gnuplot
       - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.version }}
@@ -52,6 +56,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Install gnuplot
+        run: |
+          sudo apt update &&
+          sudo apt install gnuplot
       - uses: julia-actions/setup-julia@v1
         with:
           version: '1'
