@@ -1,7 +1,7 @@
 using GnuplotRecipes
 using Documenter
 
-DocMeta.setdocmeta!(GnuplotRecipes, :DocTestSetup, :(using GnuplotRecipes); recursive=true)
+DocMeta.setdocmeta!(GnuplotRecipes, :DocTestSetup, :(using GnuplotRecipes, Gnuplot); recursive=true)
 
 makedocs(;
     modules=[GnuplotRecipes],
