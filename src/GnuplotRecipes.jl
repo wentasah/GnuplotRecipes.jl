@@ -1,6 +1,6 @@
 module GnuplotRecipes
 
-using Gnuplot, Tables, Measurements
+using Gnuplot, Tables, Measurements, InvertedIndices
 
 export bars
 
@@ -36,6 +36,7 @@ Explicit recipe to plot bar graphs from tabular data.
 - `key_enhanced=false`: whether to apply Gnuplot enhanced formatting to data keys.
 - `y2cols=[]`: Columns (specified as symbols) which should be plot against *y2* axis.
 - `linetypes=1:ncol(table)-1`: Line types (colors) used for different bars
+- `xlabelcol=1`: Index of columns containing labels.
 
 # Example
 
@@ -68,14 +69,15 @@ function bars(table;
               key_enhanced = false,
               y2cols = [],
               linetypes = 1:ncol(table)-1,
-              )::Vector{Gnuplot.PlotElement}
+              xlabelcol = 1,
+              )::Gnuplot.PlotElement
     nr = nrow(table)
 
     foreach(y2cols) do col
         @assert col in propertynames(table)
     end
 
-    axes(i) = (propertynames(table)[i] in y2cols) ? "axes x1y2 " : ""
+    axes(group) = (group in y2cols) ? "axes x1y2 " : ""
 
     if hist_style === nothing
         hist_style = (any(map(eltype.(Tables.columns(table))) do type type <: Measurement end)
@@ -90,41 +92,39 @@ function bars(table;
     hist_style == "columnstacked" && @warn "columnstacked is not well supported"
 
     function gpusing(i)
-        cols = [i, "xticlabels(1)"]
-        eb && insert!(cols, 2, i+ncol(table)-1)
+        cols = [i+1, "xticlabels(1)"]
+        eb && insert!(cols, 2, i+ncol(table))
         join(cols, ":")
     end
 
+    label_column = Tables.columns(table)[xlabelcol]
+    value_columns = Tables.columns(table)[Not(xlabelcol)]
+    group_names = Tables.columnnames(value_columns)
+
     data=Gnuplot.DatasetText(
-        String.(Tables.columns(table)[1]), # labels
-        [Measurements.value.(Tables.columns(table)[i]) for i in 2:ncol(table)]...,
-        [eltype(Tables.columns(table)[i]) <: Measurement ?
-            Measurements.uncertainty.(Tables.columns(table)[i]) :
+        String.(label_column), # labels
+        [Measurements.value.(column) for column in value_columns]...,
+        [eltype(column) <: Measurement ?
+            Measurements.uncertainty.(column) :
             fill(0.0, nr)
-         for i in 2:ncol(table) if eb]...,
+         for column in value_columns if eb]...,
     )
-    vcat(
-        Gnuplot.PlotElement(
-            xr=[-0.5, nr - 0.5],
-            cmds=vcat(["set grid ytics y2tics",
-                       "set style data histogram",
-                       "set style histogram $hist_style $gap_str",
-                       "set boxwidth $box_width",
-                       "set style fill $fill_style",
-                       """set xtics rotate by $label_rot $(label_rot > 0 ? "right" : "") $(label_enhanced ? "" : "no")enhanced""",
-                       ],
-                      !isempty(errorbars) ? ["set errorbars $errorbars"] : String[],
-                      !isempty(y2cols) ? ["set ytics nomirror", "set y2tics"] : String[],
-                      ),
-        ),
-        [
-            Gnuplot.PlotElement(
-                data=data,
-                plot="using $(gpusing(i)) $(axes(i))" *
-                """title '$(names(table, i)[1])' $(key_enhanced ? "" : "no")enhanced lt $(linetypes[i-1])""",
-            )
-            for i in 2:ncol(table)
-        ]...
+    Gnuplot.PlotElement(
+        xr=[-0.5, nr - 0.5],
+        cmds=vcat(["set grid ytics y2tics",
+                   "set style data histogram",
+                   "set style histogram $hist_style $gap_str",
+                   "set boxwidth $box_width",
+                   "set style fill $fill_style",
+                   """set xtics rotate by $label_rot $(label_rot > 0 ? "right" : "") $(label_enhanced ? "" : "no")enhanced""",
+                   ],
+                  !isempty(errorbars) ? ["set errorbars $errorbars"] : String[],
+                  !isempty(y2cols) ? ["set ytics nomirror", "set y2tics"] : String[],
+                  ),
+        data=data,
+        plot=[ "using $(gpusing(i)) $(axes(group_name))" *
+            """title '$(String(group_name))' $(key_enhanced ? "" : "no")enhanced lt $(linetypes[i])"""
+               for (i, group_name) in enumerate(group_names)]
     )
 end
 

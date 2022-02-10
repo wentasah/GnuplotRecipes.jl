@@ -59,6 +59,9 @@ end
     @test_throws AssertionError @gp bars(df, y2cols=[:bad])
     # Symbols as lables
     @test @gpok bars(DataFrame(l=[:a, :b], v=[2, 1]))
+    # xlabelcol
+    @test @gpok bars(DataFrame(v=[2, 1, 0.5], l=[:a, :b, :c]), xlabelcol=2)
+    @test @gpok bars(DataFrame(v=[2, 1, 0.5], l=[:a, :b, :c]), xlabelcol=:l)
 end
 
 Gnuplot.options.term = orig_term
