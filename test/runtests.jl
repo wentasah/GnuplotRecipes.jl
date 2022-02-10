@@ -5,15 +5,21 @@ using Gnuplot, DataFrames, Measurements, PNGFiles
 function compare_plot(name)
     fn = "img/$name.png"
     fn_expected = "img/$name.expect.png"
+    fn_diff = "img/$name.diff.png"
     isdir("img") || mkdir("img")
     save(term="pngcairo size 640,360 fontscale 0.8", output=fn)
-    cur = PNGFiles.load(fn)
+    cur = PNGFiles.load(fn);
     if isfile(fn_expected)
-        exp = PNGFiles.load(fn_expected)
+        exp = PNGFiles.load(fn_expected);
     else
         exp = cur;
         cp(fn, fn_expected)
     end
+    if exp != cur
+        diff = RGB{N0f8}(1,1,1) .- (RGB{Float16}.(cur) .- RGB{Float16}.(exp) .|> abs .|> RGB{N0f8})
+        PNGFiles.save(fn_diff, diff);
+    end
+
     return exp == cur
 end
 
