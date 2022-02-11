@@ -1,6 +1,6 @@
 using GnuplotRecipes
 using Test
-using Gnuplot, DataFrames, Measurements, PNGFiles
+using Gnuplot, DataFrames, Measurements, PNGFiles, ColorTypes, FixedPointNumbers
 
 function compare_plot(name)
     fn = "img/$name.png"
