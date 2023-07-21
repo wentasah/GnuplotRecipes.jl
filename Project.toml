@@ -20,7 +20,7 @@ FixedPointNumbers = "0.8"
 Gnuplot = "1.4"
 InvertedIndices = "1"
 Measurements = "2"
-PNGFiles = "0.3"
+PNGFiles = "0.3, 0.4"
 Tables = "1"
 julia = "1.2"
 
